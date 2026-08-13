@@ -2,12 +2,10 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { PIN_MIN_LENGTH, PIN_MAX_LENGTH } from "@/lib/authConstants";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [pin, setPin] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -19,7 +17,7 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, pin }),
+        body: JSON.stringify({ password }),
       });
       const body = await res.json();
       if (!res.ok) {
@@ -39,25 +37,13 @@ export default function LoginPage() {
     <main className="auth-shell">
       <form className="auth-card" onSubmit={submit}>
         <h1>FMS Site Survey</h1>
-        <p className="muted">First time here? Type the email your admin registered and pick any PIN - it becomes your permanent PIN.</p>
-        <label><span>Email</span><input type="email" autoFocus required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" /></label>
+        <p className="muted">Shared with the FMS team - use the same password everyone on site survey uses.</p>
         <label>
-          <span>PIN</span>
-          <input
-            type="password"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            autoComplete="one-time-code"
-            required
-            minLength={PIN_MIN_LENGTH}
-            maxLength={PIN_MAX_LENGTH}
-            value={pin}
-            onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
-            placeholder={`${PIN_MIN_LENGTH}-${PIN_MAX_LENGTH} digits`}
-          />
+          <span>Password</span>
+          <input type="password" autoFocus required value={password} onChange={(e) => setPassword(e.target.value)} />
         </label>
         {error ? <p className="error">{error}</p> : null}
-        <button type="submit" disabled={saving || !email.trim() || pin.length < PIN_MIN_LENGTH}>
+        <button type="submit" disabled={saving || !password}>
           {saving ? "Signing in…" : "Sign in"}
         </button>
       </form>

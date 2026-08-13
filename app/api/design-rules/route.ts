@@ -2,14 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { desc } from "drizzle-orm";
 import { getDb } from "@/db";
 import { designRules } from "@/db/schema";
-import { resolveUser } from "@/lib/auth";
+import { isAuthenticated } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET() {
-  const user = await resolveUser();
-  if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  if (!(await isAuthenticated())) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
   const db = getDb();
   const rules = await db.select().from(designRules).orderBy(desc(designRules.createdAt));
@@ -17,8 +16,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await resolveUser();
-  if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  if (!(await isAuthenticated())) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
   let body: { name?: unknown; category?: unknown; rule?: unknown };
   try {

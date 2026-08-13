@@ -4,7 +4,7 @@ import { getDb } from "@/db";
 import { surveySessions } from "@/db/schema";
 import { pushSurveyEstimate } from "@/lib/fmsClient";
 import { JOB_PARAMETER_KEYS, type JobParameters } from "@/lib/jobParameters";
-import { resolveUser } from "@/lib/auth";
+import { isAuthenticated } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -23,8 +23,7 @@ function sanitizeSurveyEstimate(input: unknown): JobParameters {
 // endpoint there. Separate from just saving the estimate locally, since a push is a distinct,
 // user-triggered action ("send this to FMS") that can fail independently of local persistence.
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await resolveUser();
-  if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  if (!(await isAuthenticated())) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
   const { id } = await params;
   const sessionId = Number(id);

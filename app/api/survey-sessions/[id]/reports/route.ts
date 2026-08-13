@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { asc, desc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { designRules, segments, surveyReports, surveySessions, waypoints } from "@/db/schema";
-import { resolveUser } from "@/lib/auth";
+import { isAuthenticated } from "@/lib/auth";
 import { generateRouteProposal } from "@/lib/routeProposal";
 import { getPastSurveyContext } from "@/lib/pastSurveys";
 
@@ -10,8 +10,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await resolveUser();
-  if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  if (!(await isAuthenticated())) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
   const { id } = await params;
   const sessionId = Number(id);
@@ -26,8 +25,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 // lookups (lib/pastSurveys.ts, no similarity model) fed to the LLM alongside this session's own
 // waypoints/segments - the LLM does the judgment, not custom ML.
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await resolveUser();
-  if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  if (!(await isAuthenticated())) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
   const { id } = await params;
   const sessionId = Number(id);

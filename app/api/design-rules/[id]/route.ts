@@ -2,13 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { designRules } from "@/db/schema";
-import { resolveUser } from "@/lib/auth";
+import { isAuthenticated } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await resolveUser();
-  if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  if (!(await isAuthenticated())) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
   const { id } = await params;
   const ruleId = Number(id);

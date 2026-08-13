@@ -1,54 +1,63 @@
-// PIN hashing + session-token helpers, mirroring FMS's own lib/auth.ts. Uses Node's built-in
-// crypto (scrypt) rather than bringing in bcrypt/argon2 - one less dependency for a low-QPS tool,
-// and scrypt with a random per-user salt plus a lockout policy is a reasonable trade for a short
-// numeric PIN meant to be fast to type on a phone, not a full password.
+// Single shared password, not a per-user account system - anyone who has access to FMS is meant
+// to have access to this tool too, so there's nothing to separately provision per surveyor.
+// (A real link between the two apps' auth is still to be figured out - see the FMS integration
+// section of the README.) Session is a signed, expiring cookie (HMAC over an expiry timestamp)
+// rather than a server-side session store, so there's nothing extra to run.
 
-import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
-import { eq } from "drizzle-orm";
-import { getDb } from "@/db";
-import { sessions, users } from "@/db/schema";
-import { SESSION_COOKIE_NAME } from "./authConstants";
 
-export * from "./authConstants";
+const COOKIE_NAME = "survey_session";
+const SESSION_DAYS = 30;
 
-const SCRYPT_KEYLEN = 64;
-
-export function hashPin(pin: string): string {
-  const salt = randomBytes(16).toString("hex");
-  const hash = scryptSync(pin, salt, SCRYPT_KEYLEN).toString("hex");
-  return `${salt}:${hash}`;
+function secret(): string {
+  const s = process.env.SESSION_SECRET;
+  if (!s) throw new Error("SESSION_SECRET is not set.");
+  return s;
 }
 
-export function verifyPin(pin: string, stored: string): boolean {
-  const [salt, hash] = stored.split(":");
-  if (!salt || !hash) return false;
-  const candidate = scryptSync(pin, salt, SCRYPT_KEYLEN);
-  const expected = Buffer.from(hash, "hex");
-  if (candidate.length !== expected.length) return false;
-  return timingSafeEqual(candidate, expected);
+function signValue(value: string): string {
+  return createHmac("sha256", secret()).update(value).digest("base64url");
 }
 
-export function generateSessionToken(): string {
-  return randomBytes(32).toString("hex");
+export function checkPassword(password: string): boolean {
+  const expected = process.env.SURVEY_APP_PASSWORD;
+  if (!expected) throw new Error("SURVEY_APP_PASSWORD is not set.");
+  const a = Buffer.from(password);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
 }
 
-export type ResolvedUser = { id: number; email: string; fullName: string; isAdmin: boolean; active: boolean };
+export async function createSession(): Promise<void> {
+  const expiresAt = Date.now() + SESSION_DAYS * 86_400_000;
+  const value = String(expiresAt);
+  const token = `${value}.${signValue(value)}`;
+  const store = await cookies();
+  // secure:true is dropped silently by browsers on plain http:// (e.g. local dev) - only
+  // require it once this is actually served over https.
+  store.set(COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_DAYS * 86_400,
+  });
+}
 
-/** Resolves the signed-in user from the session cookie - null if there isn't one, it's expired,
- * or the account was deactivated after the session was created. */
-export async function resolveUser(): Promise<ResolvedUser | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-  if (!token) return null;
+export async function isAuthenticated(): Promise<boolean> {
+  const store = await cookies();
+  const token = store.get(COOKIE_NAME)?.value;
+  if (!token) return false;
+  const [value, signature] = token.split(".");
+  if (!value || !signature) return false;
+  const expected = signValue(value);
+  const a = Buffer.from(signature);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return false;
+  return Number(value) > Date.now();
+}
 
-  const db = getDb();
-  const session = await db.query.sessions.findFirst({ where: eq(sessions.id, token) });
-  if (!session || session.expiresAt.getTime() <= Date.now()) return null;
-
-  const user = await db.query.users.findFirst({ where: eq(users.id, session.userId) });
-  if (!user || !user.active) return null;
-
-  await db.update(users).set({ lastSeenAt: new Date() }).where(eq(users.id, user.id));
-  return { id: user.id, email: user.email, fullName: user.fullName, isAdmin: user.isAdmin, active: user.active };
+export async function clearSession(): Promise<void> {
+  const store = await cookies();
+  store.delete(COOKIE_NAME);
 }

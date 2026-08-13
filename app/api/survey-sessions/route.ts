@@ -2,14 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { desc } from "drizzle-orm";
 import { getDb } from "@/db";
 import { surveySessions } from "@/db/schema";
-import { resolveUser } from "@/lib/auth";
+import { isAuthenticated } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET() {
-  const user = await resolveUser();
-  if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  if (!(await isAuthenticated())) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
   const db = getDb();
   const sessions = await db.select().from(surveySessions).orderBy(desc(surveySessions.startedAt));
@@ -17,10 +16,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await resolveUser();
-  if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  if (!(await isAuthenticated())) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
-  let body: { siteName?: unknown; fmsWorkOrderId?: unknown; notes?: unknown };
+  let body: { siteName?: unknown; fmsWorkOrderId?: unknown; createdBy?: unknown; notes?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -34,7 +32,7 @@ export async function POST(req: NextRequest) {
   const [session] = await db.insert(surveySessions).values({
     siteName,
     fmsWorkOrderId: typeof body.fmsWorkOrderId === "string" ? body.fmsWorkOrderId.trim() : "",
-    createdBy: user.fullName,
+    createdBy: typeof body.createdBy === "string" ? body.createdBy.trim() : "",
     notes: typeof body.notes === "string" ? body.notes : "",
   }).returning();
 

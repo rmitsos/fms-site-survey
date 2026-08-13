@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { resolveUser } from "@/lib/auth";
+import { isAuthenticated } from "@/lib/auth";
 import LogoutButton from "./LogoutButton";
 
 export default async function SessionsLayout({ children }: { children: React.ReactNode }) {
-  const user = await resolveUser();
-  if (!user) redirect("/login");
+  if (!(await isAuthenticated())) redirect("/login");
 
   return (
     <main className="admin-shell">
@@ -13,7 +12,7 @@ export default async function SessionsLayout({ children }: { children: React.Rea
         <span className="admin-nav-title">FMS Site Survey</span>
         <Link href="/sessions">All sessions</Link>
         <Link href="/sessions/design-rules">Design rules</Link>
-        <span className="admin-nav-signout">{user.fullName} · <LogoutButton /></span>
+        <span className="admin-nav-signout"><LogoutButton /></span>
       </div>
       <div className="admin-content">{children}</div>
     </main>

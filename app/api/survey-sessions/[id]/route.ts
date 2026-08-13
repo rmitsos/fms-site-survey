@@ -4,7 +4,7 @@ import { getDb } from "@/db";
 import { surveySessions } from "@/db/schema";
 import { getSessionDetail } from "@/lib/sessionDetail";
 import { JOB_PARAMETER_KEYS, type JobParameters } from "@/lib/jobParameters";
-import { resolveUser } from "@/lib/auth";
+import { isAuthenticated } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -15,8 +15,7 @@ function parseSessionId(id: string): number | null {
 }
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await resolveUser();
-  if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  if (!(await isAuthenticated())) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
   const { id } = await params;
   const sessionId = parseSessionId(id);
@@ -40,8 +39,7 @@ function sanitizeSurveyEstimate(input: unknown): JobParameters {
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await resolveUser();
-  if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  if (!(await isAuthenticated())) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
   const { id } = await params;
   const sessionId = parseSessionId(id);

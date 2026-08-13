@@ -1,32 +1,6 @@
-import { pgTable, serial, text, integer, boolean, doublePrecision, timestamp, jsonb, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, doublePrecision, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import type { JobParameters } from "@/lib/jobParameters";
-
-// Field surveyors, identified by email. No roles - everyone with an account can run surveys;
-// isAdmin only gates inviting other users (see lib/auth.ts).
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  email: text("email").notNull(),
-  fullName: text("full_name").notNull(),
-  isAdmin: boolean("is_admin").notNull().default(false),
-  active: boolean("active").notNull().default(true),
-  // Empty = no PIN set yet - the next login attempt sets whatever PIN is typed as this user's
-  // real PIN (used both for brand-new users and for an admin-triggered reset).
-  pinHash: text("pin_hash").notNull().default(""),
-  failedPinAttempts: integer("failed_pin_attempts").notNull().default(0),
-  lockedUntil: timestamp("locked_until", { withTimezone: true }),
-  lastSeenAt: timestamp("last_seen_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
-}, (table) => [uniqueIndex("users_email_unique").on(table.email)]);
-
-// Server-side sessions rather than a JWT - lets a lost/stolen field device's access be revoked
-// immediately (delete the row) instead of waiting for a token to expire.
-export const sessions = pgTable("sessions", {
-  id: text("id").primaryKey(), // random token, used directly as the session cookie's value
-  userId: integer("user_id").notNull().references(() => users.id),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().default(sql`now()`),
-  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-});
 
 // One row per site visit. Waypoints/segments/reports all hang off a session.
 export const surveySessions = pgTable("survey_sessions", {

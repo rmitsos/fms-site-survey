@@ -19,16 +19,16 @@ Env vars: see `.env.example`.
 
 ## Authentication
 
-Email + PIN, mirroring FMS's own scheme (`lib/auth.ts`): on a completely empty
-install, the first login attempt creates the first user as an admin and
-whatever PIN is typed becomes their real PIN. An admin then registers each
-surveyor by email (no PIN yet); that surveyor's first login sets their PIN
-the same way. 5 failed attempts locks the account for 15 minutes. All of
-`/sessions` and the survey-sessions/waypoints APIs require a signed-in user;
-`createdBy` on a session comes from that session, not client input.
+One shared password (`SURVEY_APP_PASSWORD`), not per-user accounts - anyone
+with access to FMS is meant to have access to this tool too, so there's
+nothing to separately provision per surveyor (`lib/auth.ts`). Session is a
+signed, expiring cookie (`SESSION_SECRET`), no server-side session store. All
+of `/sessions` and the survey-sessions/waypoints/design-rules APIs require a
+signed-in session; `createdBy` on a session is a free-text field again since
+there's no authenticated identity to source it from.
 
-There's no admin UI yet for registering surveyors - insert directly into
-`users` (email, full_name) and leave `pin_hash` empty.
+A real link between FMS's own auth and this app's is still to be figured
+out - this is a deliberate placeholder until then.
 
 ## FMS integration
 
