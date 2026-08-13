@@ -1,0 +1,19 @@
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { eq } from "drizzle-orm";
+import { getDb } from "@/db";
+import { sessions } from "@/db/schema";
+import { SESSION_COOKIE_NAME } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
+
+export async function POST() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  if (token) {
+    const db = getDb();
+    await db.delete(sessions).where(eq(sessions.id, token));
+  }
+  cookieStore.delete(SESSION_COOKIE_NAME);
+  return NextResponse.json({ ok: true });
+}

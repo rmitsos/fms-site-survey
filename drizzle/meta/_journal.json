@@ -15,6 +15,13 @@
       "when": 1786603727163,
       "tag": "0001_magical_raider",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786605546130,
+      "tag": "0002_dashing_mephisto",
+      "breakpoints": true
     }
   ]
 }

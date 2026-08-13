@@ -3,6 +3,7 @@ import { desc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { segments, surveySessions, waypoints } from "@/db/schema";
 import { segmentGeometry } from "@/lib/waypoints";
+import { resolveUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -15,6 +16,9 @@ function num(value: unknown): number | null {
 // them - distance/heading computed by segmentGeometry's manual > gps > client-supplied
 // DeviceMotion reading > mixed-fallback precedence.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await resolveUser();
+  if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+
   const { id } = await params;
   const sessionId = Number(id);
   if (!Number.isInteger(sessionId)) return NextResponse.json({ error: "Invalid session id." }, { status: 400 });

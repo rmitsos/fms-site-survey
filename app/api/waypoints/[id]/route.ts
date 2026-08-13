@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { segments, waypoints } from "@/db/schema";
 import { segmentGeometry } from "@/lib/waypoints";
+import { resolveUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -37,6 +38,9 @@ async function recomputeAdjacentSegments(db: ReturnType<typeof getDb>, waypointI
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await resolveUser();
+  if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+
   const { id } = await params;
   const waypointId = Number(id);
   if (!Number.isInteger(waypointId)) return NextResponse.json({ error: "Invalid waypoint id." }, { status: 400 });

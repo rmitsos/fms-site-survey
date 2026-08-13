@@ -17,6 +17,19 @@ npm run dev
 
 Env vars: see `.env.example`.
 
+## Authentication
+
+Email + PIN, mirroring FMS's own scheme (`lib/auth.ts`): on a completely empty
+install, the first login attempt creates the first user as an admin and
+whatever PIN is typed becomes their real PIN. An admin then registers each
+surveyor by email (no PIN yet); that surveyor's first login sets their PIN
+the same way. 5 failed attempts locks the account for 15 minutes. All of
+`/sessions` and the survey-sessions/waypoints APIs require a signed-in user;
+`createdBy` on a session comes from that session, not client input.
+
+There's no admin UI yet for registering surveyors - insert directly into
+`users` (email, full_name) and leave `pin_hash` empty.
+
 ## FMS integration
 
 A survey session links to an FMS work order via `fmsWorkOrderId` (FMS's
