@@ -16,3 +16,13 @@ npm run dev
 ```
 
 Env vars: see `.env.example`.
+
+## FMS integration
+
+A survey session links to an FMS work order via `fmsWorkOrderId` (FMS's
+`customer_work_id`) and holds its budget numbers in `surveyEstimate`
+(`lib/jobParameters.ts`, mirroring FMS's `JobParameters`). `POST
+/api/survey-sessions/:id/push-estimate` sends that estimate to FMS's
+`work_orders.survey_estimate` via `lib/fmsClient.ts`, authenticated with
+`FMS_SHARED_SECRET` against FMS's `SURVEY_APP_SHARED_SECRET` (same value,
+different env var name on each side) at `FMS_BASE_URL`.

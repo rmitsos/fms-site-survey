@@ -8,6 +8,12 @@ export const surveySessions = pgTable("survey_sessions", {
   status: text("status").notNull().default("draft"), // draft | in_progress | completed
   createdBy: text("created_by").notNull().default(""),
   notes: text("notes").notNull().default(""),
+  // FMS work_orders.customer_work_id this session budgets for - required to push an estimate.
+  fmsWorkOrderId: text("fms_work_order_id").notNull().default(""),
+  // JobParameters-shaped (see lib/jobParameters.ts), mirroring FMS's work_orders.survey_estimate
+  // shape so it can be pushed there as-is.
+  surveyEstimate: jsonb("survey_estimate"),
+  estimatePushedAt: timestamp("estimate_pushed_at", { withTimezone: true }),
   startedAt: timestamp("started_at", { withTimezone: true }).notNull().default(sql`now()`),
   completedAt: timestamp("completed_at", { withTimezone: true }),
 });
