@@ -1,5 +1,6 @@
 import { pgTable, serial, text, integer, doublePrecision, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import type { JobParameters } from "@/lib/jobParameters";
 
 // One row per site visit. Waypoints/segments/reports all hang off a session.
 export const surveySessions = pgTable("survey_sessions", {
@@ -12,7 +13,7 @@ export const surveySessions = pgTable("survey_sessions", {
   fmsWorkOrderId: text("fms_work_order_id").notNull().default(""),
   // JobParameters-shaped (see lib/jobParameters.ts), mirroring FMS's work_orders.survey_estimate
   // shape so it can be pushed there as-is.
-  surveyEstimate: jsonb("survey_estimate"),
+  surveyEstimate: jsonb("survey_estimate").$type<JobParameters>(),
   estimatePushedAt: timestamp("estimate_pushed_at", { withTimezone: true }),
   startedAt: timestamp("started_at", { withTimezone: true }).notNull().default(sql`now()`),
   completedAt: timestamp("completed_at", { withTimezone: true }),

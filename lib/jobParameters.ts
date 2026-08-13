@@ -26,7 +26,18 @@ export type JobParameters = {
   surfaceType?: SurfaceType;
 };
 
-export const JOB_PARAMETER_KEYS: Array<keyof JobParameters> = [
-  "buildingSize", "floors", "elevatorRouting", "trenchDistance", "conduitRoutingType",
-  "spaceType", "indoorRoutingDistance", "blowingType", "aerialRouting", "lastDropRouting", "surfaceType",
+export const JOB_PARAMETER_FIELDS: Array<{ key: keyof JobParameters; label: string; options?: string[] }> = [
+  { key: "buildingSize", label: "Building size", options: ["Small", "Large"] },
+  { key: "floors", label: "Number of floors" },
+  { key: "elevatorRouting", label: "Elevator shaft routing", options: ["No", "Yes"] },
+  { key: "trenchDistance", label: "Civil trench distance", options: ["None", "≤ 5m", "≤ 15m", "≤ 30m", "≤ 60m"] },
+  { key: "conduitRoutingType", label: "Conduit routing type", options: ["New conduit", "Existing routing"] },
+  { key: "spaceType", label: "Space type", options: ["Private", "Public"] },
+  { key: "surfaceType", label: "Surface type (civil works effort only)", options: ["Pavement", "Asphalt", "Concrete"] },
+  { key: "indoorRoutingDistance", label: "Indoor BEP routing distance", options: ["≤ 10m", "≤ 25m", "≤ 40m"] },
+  { key: "blowingType", label: "Blowing type", options: ["New BEP", "Replacement"] },
+  { key: "aerialRouting", label: "Aerial routing", options: ["No", "Yes"] },
+  { key: "lastDropRouting", label: "Last drop routing (Phase C only)", options: ["≤ 40m", "> 40m"] },
 ];
+
+export const JOB_PARAMETER_KEYS: Array<keyof JobParameters> = JOB_PARAMETER_FIELDS.map((field) => field.key);
