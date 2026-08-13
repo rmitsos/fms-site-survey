@@ -10,5 +10,12 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
   const detail = await getSessionDetail(sessionId);
   if (!detail) notFound();
 
-  return <CaptureClient initialSession={detail.session} initialWaypoints={detail.waypoints} initialSegments={detail.segments} />;
+  return (
+    <CaptureClient
+      initialSession={detail.session}
+      initialWaypoints={detail.waypoints}
+      initialSegments={detail.segments}
+      initialReports={detail.reports}
+    />
+  );
 }

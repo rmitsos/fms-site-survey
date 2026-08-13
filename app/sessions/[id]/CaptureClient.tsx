@@ -4,21 +4,25 @@ import { useMemo, useRef, useState } from "react";
 import { useMotionTracker } from "@/lib/useMotionTracker";
 import { offsetLatLng } from "@/lib/geo";
 import { effectivePosition } from "@/lib/waypoints";
-import type { surveySessions, waypoints, segments } from "@/db/schema";
+import type { surveySessions, waypoints, segments, surveyReports } from "@/db/schema";
 import SurveyEstimateForm from "./SurveyEstimateForm";
+import ReportsPanel from "./ReportsPanel";
 
 type SessionRecord = typeof surveySessions.$inferSelect;
 type WaypointRecord = typeof waypoints.$inferSelect;
 type SegmentRecord = typeof segments.$inferSelect;
+type ReportRecord = typeof surveyReports.$inferSelect;
 
 export default function CaptureClient({
   initialSession,
   initialWaypoints,
   initialSegments,
+  initialReports,
 }: {
   initialSession: SessionRecord;
   initialWaypoints: WaypointRecord[];
   initialSegments: SegmentRecord[];
+  initialReports: ReportRecord[];
 }) {
   const [session, setSession] = useState(initialSession);
   const [waypointList, setWaypointList] = useState(initialWaypoints);
@@ -237,6 +241,8 @@ export default function CaptureClient({
       </table>
 
       <SurveyEstimateForm session={session} onUpdated={(patch) => setSession((prev) => ({ ...prev, ...patch }))} />
+
+      <ReportsPanel sessionId={session.id} waypointCount={waypointList.length} initialReports={initialReports} />
     </>
   );
 }

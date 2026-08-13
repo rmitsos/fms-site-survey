@@ -89,6 +89,9 @@ h2 { font-size: 15px; font-weight: 800; margin: 0 0 8px; }
 .reveal-box p { margin: 4px 0; }
 .reveal-box code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #f1dfa0; }
 
+.report-card { margin-bottom: 12px; }
+.report-card .data-table, .report-card .capture-controls { margin-top: 10px; }
+
 .data-table { width: 100%; border-collapse: collapse; font-size: 12.5px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 .data-table th { padding: 10px 12px; background: #f0f3f5; color: var(--muted); font-weight: 700; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; }
 .data-table td { padding: 11px 12px; border-top: 1px solid var(--line); vertical-align: middle; }

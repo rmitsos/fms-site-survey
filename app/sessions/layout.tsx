@@ -12,6 +12,7 @@ export default async function SessionsLayout({ children }: { children: React.Rea
       <div className="admin-nav">
         <span className="admin-nav-title">FMS Site Survey</span>
         <Link href="/sessions">All sessions</Link>
+        <Link href="/sessions/design-rules">Design rules</Link>
         <span className="admin-nav-signout">{user.fullName} · <LogoutButton /></span>
       </div>
       <div className="admin-content">{children}</div>

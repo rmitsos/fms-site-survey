@@ -39,3 +39,15 @@ A survey session links to an FMS work order via `fmsWorkOrderId` (FMS's
 `work_orders.survey_estimate` via `lib/fmsClient.ts`, authenticated with
 `FMS_SHARED_SECRET` against FMS's `SURVEY_APP_SHARED_SECRET` (same value,
 different env var name on each side) at `FMS_BASE_URL`.
+
+## Route proposals (LLM)
+
+`POST /api/survey-sessions/:id/reports` asks Claude (`claude-opus-5`, structured
+JSON output - `lib/routeProposal.ts`) to propose a cable route connecting a
+session's waypoints, given that session's own waypoints/segments, the
+`design_rules` library, and summaries from similar past completed surveys
+(`lib/pastSurveys.ts` - plain SQL retrieval by site-name match falling back to
+most recent, not a similarity model; the LLM does the judgment). Results are
+stored in `survey_reports` and shown on the session page, where a report can
+be marked approved/sent. Design rules are managed at `/sessions/design-rules`.
+Requires `ANTHROPIC_API_KEY`.
