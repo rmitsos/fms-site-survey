@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import WorkOrderSearch from "./WorkOrderSearch";
 
 export default function CreateSessionForm() {
   const router = useRouter();
@@ -38,7 +39,13 @@ export default function CreateSessionForm() {
     <div className="panel">
       <form onSubmit={handleSubmit} className="inline-form">
         <label><span>Site name</span><input value={siteName} onChange={(e) => setSiteName(e.target.value)} required /></label>
-        <label><span>FMS work order</span><input value={fmsWorkOrderId} onChange={(e) => setFmsWorkOrderId(e.target.value)} placeholder="customer_work_id" /></label>
+        <label>
+          <span>FMS work order</span>
+          <WorkOrderSearch value={fmsWorkOrderId} onChange={(id, wo) => {
+            setFmsWorkOrderId(id);
+            if (wo && !siteName) setSiteName([wo.subscriberName, wo.street, wo.municipality].filter(Boolean).join(", "));
+          }} />
+        </label>
         <label><span>Surveyor</span><input value={createdBy} onChange={(e) => setCreatedBy(e.target.value)} /></label>
         <button type="submit" disabled={pending}>{pending ? "Starting…" : "Start session"}</button>
       </form>

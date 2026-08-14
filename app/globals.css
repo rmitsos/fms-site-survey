@@ -124,3 +124,21 @@ h2 { font-size: 15px; font-weight: 800; margin: 0 0 8px; }
   width: 44px; height: 44px; border-radius: 6px; border: 1px dashed var(--line); display: grid; place-items: center;
   font-size: 10px; color: var(--muted); text-align: center;
 }
+
+.wo-search { position: relative; }
+.wo-search input { width: 100%; }
+.wo-search-loading { position: absolute; right: 10px; top: 8px; font-size: 12px; color: var(--muted); }
+.wo-search-results {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 10;
+  margin: 2px 0 0; padding: 0; list-style: none;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(16, 26, 38, .12); max-height: 240px; overflow-y: auto;
+}
+.wo-search-results li button {
+  all: unset; display: flex; flex-direction: column; gap: 1px; width: 100%;
+  padding: 8px 12px; cursor: pointer; font-size: 12.5px;
+}
+.wo-search-results li button:hover { background: #f0f6f5; }
+.wo-search-results li button strong { font-size: 13px; color: var(--ink); }
+.wo-search-results li button span { color: var(--muted); font-size: 11.5px; }
+.wo-search-results li + li { border-top: 1px solid var(--line); }

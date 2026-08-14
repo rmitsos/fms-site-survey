@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { JOB_PARAMETER_FIELDS, type JobParameters } from "@/lib/jobParameters";
+import WorkOrderSearch from "../WorkOrderSearch";
 
 export type EstimateSessionFields = {
   id: number;
@@ -97,7 +98,7 @@ export default function SurveyEstimateForm({
       <p className="muted">Job parameters pushed to FMS as work_orders.survey_estimate for costing.</p>
       <form onSubmit={handleSave}>
         <div className="inline-form">
-          <label><span>FMS work order</span><input value={fmsWorkOrderId} onChange={(e) => setFmsWorkOrderId(e.target.value)} placeholder="customer_work_id" /></label>
+          <label><span>FMS work order</span><WorkOrderSearch value={fmsWorkOrderId} onChange={(id) => setFmsWorkOrderId(id)} /></label>
         </div>
         <div className="inline-form">
           {JOB_PARAMETER_FIELDS.map((field) => (
